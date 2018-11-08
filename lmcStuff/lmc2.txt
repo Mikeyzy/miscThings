@@ -92,6 +92,7 @@ saveD2	STO r0
 	BR  digit2	#end of baseX to baseY
 
 loadB	IN 		#base b
+	BRZ error
 	STO r3		#similar way as loadA to call s(square) Function
 	STO r1
 	STO r7
@@ -125,9 +126,9 @@ r7	DAT 0
 
 #secret sauce
 sJump1	DAT 721		#machine code 'BRZ toBaseA'
-sJump2	DAT 769		#machine code 'BRZ toBaseB'
+sJump2	DAT 770		#machine code 'BRZ toBaseB'
 bJump1	DAT 662		#machine code 'BR  loadB'
-bJump2	DAT 676		#machine code 'BR  result'
+bJump2	DAT 677		#machine code 'BR  result'
 
 #constants
 one	DAT 1
