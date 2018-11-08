@@ -1,0 +1,115 @@
+	IN
+	STO r0		#number n
+loadA	IN 		#base a
+	STO r3		#s(square) Function takes 2 argument, r3 and r1
+	STO r1		
+	STO r5		#load baseX of baseCon Function, save load cycle 
+	STO r7		#load errorCounter of baseCon Function, save load cycle
+
+	SUB two		#|*if base a > 2:
+	BRP pass	#|     go to 'pass'
+	BR  error 	#| else:    
+			#|_    go to 'error'
+
+pass	LDA sJump1	#|*load return address from sJump1
+	STO sReturn	#|_set the return address of s(square) Function
+
+sStart	LDA zero	#start of s(square) Function
+sLoop	ADD r3		#r3 as base
+	STO r2		#r2 as result(base^2)
+	LDA r1		#r1 as counter
+	SUB one		#do Repeated addition loop
+	STO r1
+sReturn	BRZ toBaseA	#Return Address, Secret Sauce No.1
+	LDA r2
+	BR  sLoop
+
+toBaseA	LDA r2		#prepare to call baseCon
+	STO r4		#set baseY^2
+	LDA hund
+	STO r2		#set baseX^2
+	LDA ten
+	STO r3		#set baseY
+	LDA bJump1	#load return address from bJump1
+	STO bReturn	#set the return address of baseCon Function
+
+baseCon LDA r7		#start of baseCon Function, this convert
+digit3	STO r6		#r0 represented number from baseX to baseY.
+	LDA r0		#baseCon(r0, r2, r3, r4, r5, r7), parameters are:
+	SUB r2		#(number, baseX^2, baseX, baseY^2, baseY, checkBase)
+	BRP saveD3	#this function also check for error, by compare the
+reset	LDA r7		#count of each digit with checkBase to ensure the output
+digit2	STO r6		#is correct. this is not the fastest code due to limmited
+	LDA r0		#program memory, but it saves a few lines of instructions
+	SUB r3
+	BRP saveD2
+digit1	LDA r0
+	SUB r5
+	BRP error
+	LDA r0
+	ADD r1
+	STO r0
+bReturn	BR  loadB	#Return Address, Secret Sauce No.2
+saveD3	STO r0
+	LDA r1
+	ADD r4
+	STO r1
+	LDA r6
+	SUB one
+	BRZ error
+	BR  digit3
+saveD2	STO r0
+	LDA r1
+	ADD r5
+	STO r1
+	LDA r6
+	SUB one
+	BRZ error
+	BR  digit2	#end of baseX to baseY
+
+loadB	IN 		#base b
+	STO r3		#similar way as loadA to call s(square) Function
+	STO r1
+	STO r7
+	LDA sJump2	#|*load return address from sJump2
+	STO sReturn	#| set the return address of s(square) Function
+	BR  sStart	#|_call baseCon Function
+
+toBaseB	LDA hund	#similar to toBaseA, prepare to call 
+	STO r4
+	LDA ten
+	STO r5
+	LDA bJump2	#|*load return address from bJump2
+	STO bReturn	#| set the return address of baseCon Function
+	BR  baseCon	#|_call baseCon Function
+
+result	LDA r0
+	BR  output
+
+error	LDA inf
+	BR  output
+
+#variables
+r0	DAT 0
+r1	DAT 0
+r2	DAT 0
+r3	DAT 0
+r4	DAT 0
+r5	DAT 0
+r6	DAT 0
+r7	DAT 0
+
+#secret sauce
+sJump1	DAT 721		#machine code 'BRZ toBaseA'
+sJump2	DAT 769		#machine code 'BRZ toBaseB'
+bJump1	DAT 662		#machine code 'BR  loadB'
+bJump2	DAT 676		#machine code 'BR  result'
+
+#constants
+one	DAT 1
+two	DAT 2
+ten	DAT 10
+hund	DAT 100
+inf	DAT 999
+output	OUT 		#all output goes here, the end of the program
+zero	HLT		#machine code 0, can be used as zero constant
